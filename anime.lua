@@ -1,4 +1,4 @@
--- ANIME ARENA - MENU AUTO OPEN + NÚT TOGGLE
+-- ANIME ARENA - MENU FIXED RESPAWN
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 local LP = Players.LocalPlayer
@@ -11,6 +11,7 @@ local C = {
 }
 
 local Target, LastAtk, LastSkill = nil, 0, 0
+local Gui = nil
 
 local function DoClick()
     pcall(function() if mouse1click then mouse1click() end end)
@@ -59,39 +60,53 @@ local function GetEnemy()
     return best
 end
 
+-- HÀM LẤY PARENT CHO GUI (chống xóa khi respawn)
+local function GetGuiParent()
+    if gethui then
+        local ok, hui = pcall(gethui)
+        if ok and hui then return hui end
+    end
+    local cg = game:GetService("CoreGui")
+    if cg then
+        local ok = pcall(function() local t = cg:FindFirstChild("Test") end)
+        if ok then return cg end
+    end
+    return LP:FindFirstChildOfClass("PlayerGui") or LP:WaitForChild("PlayerGui", 5)
+end
+
 local function MakeUI()
-    local pg = LP:FindFirstChildOfClass("PlayerGui") or LP:WaitForChild("PlayerGui", 5)
-    if not pg then return end
-    if pg:FindFirstChild("AnimeFarmMenu") then pg.AnimeFarmMenu:Destroy() end
+    if Gui then Gui:Destroy() end
+    local parent = GetGuiParent()
+    if not parent then return end
 
-    local gui = Instance.new("ScreenGui")
-    gui.Name = "AnimeFarmMenu"
-    gui.ResetOnSpawn = false
-    gui.IgnoreGuiInset = true
-    gui.DisplayOrder = 999999
-    gui.Parent = pg
+    Gui = Instance.new("ScreenGui")
+    Gui.Name = "AnimeFarmMenu_"..math.random(1,99999)
+    Gui.ResetOnSpawn = false
+    Gui.IgnoreGuiInset = true
+    Gui.DisplayOrder = 999999
+    pcall(function() Gui.Parent = parent end)
 
-    -- ============ NÚT TOGGLE ☰ ============
-    local openBtn = Instance.new("TextButton", gui)
+    -- NÚT TOGGLE - ĐẶT DƯỚI DELTA
+    local openBtn = Instance.new("TextButton", Gui)
     openBtn.Name = "ToggleBtn"
-    openBtn.Size = UDim2.new(0, 55, 0, 55)
-    openBtn.Position = UDim2.new(0, 15, 0, 15)
+    openBtn.Size = UDim2.new(0, 45, 0, 45)
+    openBtn.Position = UDim2.new(0, 10, 0.3, 0)  -- 30% chiều cao, dưới Delta
     openBtn.BackgroundColor3 = Color3.fromRGB(18, 18, 25)
     openBtn.Text = "☰"
-    openBtn.TextSize = 26
+    openBtn.TextSize = 22
     openBtn.TextColor3 = Color3.fromRGB(0, 255, 150)
     openBtn.Font = Enum.Font.GothamBold
     openBtn.AutoButtonColor = false
     openBtn.Active = true
     openBtn.Draggable = true
-    openBtn.ZIndex = 10  -- Luôn hiện trên menu
+    openBtn.ZIndex = 999
     Instance.new("UICorner", openBtn).CornerRadius = UDim.new(1, 0)
     local obs = Instance.new("UIStroke", openBtn)
     obs.Color = Color3.fromRGB(0, 255, 150)
     obs.Thickness = 2
 
-    -- ============ MENU CHÍNH ============
-    local main = Instance.new("Frame", gui)
+    -- MENU
+    local main = Instance.new("Frame", Gui)
     main.Name = "Main"
     main.Size = UDim2.new(0, 320, 0, 460)
     main.Position = UDim2.new(0.5, -160, 0.5, -230)
@@ -99,7 +114,7 @@ local function MakeUI()
     main.BorderSizePixel = 0
     main.Active = true
     main.Draggable = false
-    main.Visible = true  -- ⚠️ TỰ MỞ KHI CHẠY
+    main.Visible = true
     main.ZIndex = 5
     Instance.new("UICorner", main).CornerRadius = UDim.new(0, 10)
     local ms = Instance.new("UIStroke", main)
@@ -107,7 +122,6 @@ local function MakeUI()
     ms.Thickness = 1.5
     ms.Transparency = 0.3
 
-    -- HEADER
     local hdr = Instance.new("Frame", main)
     hdr.Size = UDim2.new(1, 0, 0, 100)
     hdr.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
@@ -167,7 +181,6 @@ local function MakeUI()
     Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)
     closeBtn.MouseButton1Click:Connect(function() main.Visible = false end)
 
-    -- SCROLL
     local scroll = Instance.new("ScrollingFrame", main)
     scroll.Size = UDim2.new(1, -20, 1, -115)
     scroll.Position = UDim2.new(0, 10, 0, 108)
@@ -321,13 +334,19 @@ local function MakeUI()
         end)
     end
 
-    -- Bấm nút ☰ → ẩn/hiện menu (KHÔNG bị ảnh hưởng bởi menu)
     openBtn.MouseButton1Click:Connect(function()
         main.Visible = not main.Visible
     end)
 end
 
 MakeUI()
+
+-- TỰ KHÔI PHỤC MENU SAU KHI RESPAWN
+LP.CharacterAdded:Connect(function()
+    Target = nil
+    task.wait(2)
+    MakeUI()
+end)
 
 -- VÒNG LẶP FARM
 task.spawn(function()
@@ -358,7 +377,5 @@ task.spawn(function()
         end
     end
 end)
-
-LP.CharacterAdded:Connect(function() Target = nil end)
 
 print("⚔️ Anime Farm loaded - tungtungtutu")
