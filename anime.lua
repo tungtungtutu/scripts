@@ -1,4 +1,4 @@
--- ANIME ARENA - FULL MENU + AUTO FARM + SKILL
+-- ANIME ARENA - MENU FIXED
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 local LP = Players.LocalPlayer
@@ -6,13 +6,12 @@ local LP = Players.LocalPlayer
 local C = {
     Farm = false, Skill = false, Range = 200,
     AtkCD = 0.03, SkillCD = 0.15, TP = true,
-    Keys = {Q=true, E=true, R=true},  -- ĐÚNG PHÍM GAME NÀY
+    Keys = {Q=true, E=true, R=true},
     MemeURL = "rbxassetid://13329309365"
 }
 
 local Target, LastAtk, LastSkill = nil, 0, 0
 
--- CLICK (nhiều fallback)
 local function DoClick()
     pcall(function() if mouse1click then mouse1click() end end)
     pcall(function()
@@ -28,7 +27,6 @@ local function DoClick()
     end)
 end
 
--- BẤM PHÍM (3 fallback)
 local function DoKey(key)
     pcall(function()
         if keypress then keypress(key) task.wait(0.05) keyrelease(key) end
@@ -39,15 +37,8 @@ local function DoKey(key)
         task.wait(0.05)
         VIM:SendKeyEvent(false, Enum.KeyCode[key], false, game)
     end)
-    pcall(function()
-        local VU = game:GetService("VirtualUser")
-        VU:Button1Down(Vector2.new(0, 0))
-        task.wait(0.02)
-        VU:Button1Up(Vector2.new(0, 0))
-    end)
 end
 
--- TÌM ĐỊCH
 local function GetEnemy()
     local myChar = LP.Character
     if not myChar then return nil end
@@ -68,7 +59,6 @@ local function GetEnemy()
     return best
 end
 
--- MENU
 local function MakeUI()
     local pg = LP:FindFirstChildOfClass("PlayerGui") or LP:WaitForChild("PlayerGui", 5)
     if not pg then return end
@@ -81,7 +71,7 @@ local function MakeUI()
     gui.DisplayOrder = 999999
     gui.Parent = pg
 
-    -- Nút mở menu
+    -- NÚT MỞ MENU
     local openBtn = Instance.new("TextButton", gui)
     openBtn.Size = UDim2.new(0, 55, 0, 55)
     openBtn.Position = UDim2.new(0, 15, 0, 100)
@@ -92,13 +82,13 @@ local function MakeUI()
     openBtn.Font = Enum.Font.GothamBold
     openBtn.AutoButtonColor = false
     openBtn.Active = true
-    openBtn.Draggable = true
+    openBtn.Draggable = true  -- Nút này vẫn kéo được
     Instance.new("UICorner", openBtn).CornerRadius = UDim.new(1, 0)
     local obs = Instance.new("UIStroke", openBtn)
     obs.Color = Color3.fromRGB(0, 255, 150)
     obs.Thickness = 2
 
-    -- Menu chính
+    -- MENU CHÍNH
     local main = Instance.new("Frame", gui)
     main.Name = "Main"
     main.Size = UDim2.new(0, 320, 0, 460)
@@ -106,7 +96,7 @@ local function MakeUI()
     main.BackgroundColor3 = Color3.fromRGB(18, 18, 25)
     main.BorderSizePixel = 0
     main.Active = true
-    main.Draggable = true
+    main.Draggable = false  -- ⚠️ SỬA: KHÔNG CHO KÉO CẢ MENU
     main.Visible = false
     Instance.new("UICorner", main).CornerRadius = UDim.new(0, 10)
     local ms = Instance.new("UIStroke", main)
@@ -114,12 +104,15 @@ local function MakeUI()
     ms.Thickness = 1.5
     ms.Transparency = 0.3
 
-    -- Header + ảnh
+    -- HEADER (kéo được)
     local hdr = Instance.new("Frame", main)
     hdr.Size = UDim2.new(1, 0, 0, 100)
     hdr.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
     hdr.BorderSizePixel = 0
+    hdr.Active = true
+    hdr.Draggable = true  -- ⚠️ CHỈ HEADER KÉO ĐƯỢC
     Instance.new("UICorner", hdr).CornerRadius = UDim.new(0, 10)
+
     local hf = Instance.new("Frame", hdr)
     hf.Size = UDim2.new(1, 0, 0, 12)
     hf.Position = UDim2.new(0, 0, 1, -12)
@@ -139,7 +132,7 @@ local function MakeUI()
     is.Color = Color3.fromRGB(0, 255, 150)
     is.Thickness = 1.5
 
-    -- Tên
+    -- TÊN
     local title = Instance.new("TextLabel", hdr)
     title.Size = UDim2.new(1, -120, 0, 30)
     title.Position = UDim2.new(0, 95, 0, 25)
@@ -160,7 +153,7 @@ local function MakeUI()
     sub.TextSize = 11
     sub.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- Nút X
+    -- NÚT X
     local closeBtn = Instance.new("TextButton", hdr)
     closeBtn.Size = UDim2.new(0, 28, 0, 28)
     closeBtn.Position = UDim2.new(1, -34, 0, 10)
@@ -173,7 +166,7 @@ local function MakeUI()
     Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)
     closeBtn.MouseButton1Click:Connect(function() main.Visible = false end)
 
-    -- Scroll
+    -- SCROLL
     local scroll = Instance.new("ScrollingFrame", main)
     scroll.Size = UDim2.new(1, -20, 1, -115)
     scroll.Position = UDim2.new(0, 10, 0, 108)
@@ -184,7 +177,6 @@ local function MakeUI()
     scroll.CanvasSize = UDim2.new(0, 0, 0, 500)
     Instance.new("UIListLayout", scroll).Padding = UDim.new(0, 8)
 
-    -- Toggle
     local function Toggle(text, default, cb)
         local f = Instance.new("Frame", scroll)
         f.Size = UDim2.new(1, -20, 0, 40)
@@ -219,7 +211,6 @@ local function MakeUI()
         end)
     end
 
-    -- Slider
     local function Slider(text, mn, mx, default, cb)
         local f = Instance.new("Frame", scroll)
         f.Size = UDim2.new(1, -20, 0, 55)
@@ -275,7 +266,6 @@ local function MakeUI()
         end)
     end
 
-    -- Nội dung
     Toggle("Bật Auto Farm", C.Farm, function(s) C.Farm = s; Target = nil end)
     Toggle("Teleport tới địch", C.TP, function(s) C.TP = s end)
     Slider("Phạm vi", 50, 500, C.Range, function(v) C.Range = v end)
@@ -324,7 +314,6 @@ end
 
 MakeUI()
 
--- VÒNG LẶP FARM
 task.spawn(function()
     while task.wait(0.02) do
         if not C.Farm then Target = nil continue end
