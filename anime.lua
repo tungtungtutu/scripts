@@ -1,4 +1,4 @@
--- ANIME ARENA - MENU FIXED
+-- ANIME ARENA - MENU AUTO OPEN + NÚT TOGGLE
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 local LP = Players.LocalPlayer
@@ -71,10 +71,11 @@ local function MakeUI()
     gui.DisplayOrder = 999999
     gui.Parent = pg
 
-    -- NÚT MỞ MENU
+    -- ============ NÚT TOGGLE ☰ ============
     local openBtn = Instance.new("TextButton", gui)
+    openBtn.Name = "ToggleBtn"
     openBtn.Size = UDim2.new(0, 55, 0, 55)
-    openBtn.Position = UDim2.new(0, 15, 0, 100)
+    openBtn.Position = UDim2.new(0, 15, 0, 15)
     openBtn.BackgroundColor3 = Color3.fromRGB(18, 18, 25)
     openBtn.Text = "☰"
     openBtn.TextSize = 26
@@ -82,13 +83,14 @@ local function MakeUI()
     openBtn.Font = Enum.Font.GothamBold
     openBtn.AutoButtonColor = false
     openBtn.Active = true
-    openBtn.Draggable = true  -- Nút này vẫn kéo được
+    openBtn.Draggable = true
+    openBtn.ZIndex = 10  -- Luôn hiện trên menu
     Instance.new("UICorner", openBtn).CornerRadius = UDim.new(1, 0)
     local obs = Instance.new("UIStroke", openBtn)
     obs.Color = Color3.fromRGB(0, 255, 150)
     obs.Thickness = 2
 
-    -- MENU CHÍNH
+    -- ============ MENU CHÍNH ============
     local main = Instance.new("Frame", gui)
     main.Name = "Main"
     main.Size = UDim2.new(0, 320, 0, 460)
@@ -96,21 +98,22 @@ local function MakeUI()
     main.BackgroundColor3 = Color3.fromRGB(18, 18, 25)
     main.BorderSizePixel = 0
     main.Active = true
-    main.Draggable = false  -- ⚠️ SỬA: KHÔNG CHO KÉO CẢ MENU
-    main.Visible = false
+    main.Draggable = false
+    main.Visible = true  -- ⚠️ TỰ MỞ KHI CHẠY
+    main.ZIndex = 5
     Instance.new("UICorner", main).CornerRadius = UDim.new(0, 10)
     local ms = Instance.new("UIStroke", main)
     ms.Color = Color3.fromRGB(0, 255, 150)
     ms.Thickness = 1.5
     ms.Transparency = 0.3
 
-    -- HEADER (kéo được)
+    -- HEADER
     local hdr = Instance.new("Frame", main)
     hdr.Size = UDim2.new(1, 0, 0, 100)
     hdr.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
     hdr.BorderSizePixel = 0
     hdr.Active = true
-    hdr.Draggable = true  -- ⚠️ CHỈ HEADER KÉO ĐƯỢC
+    hdr.Draggable = true
     Instance.new("UICorner", hdr).CornerRadius = UDim.new(0, 10)
 
     local hf = Instance.new("Frame", hdr)
@@ -119,7 +122,6 @@ local function MakeUI()
     hf.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
     hf.BorderSizePixel = 0
 
-    -- ẢNH
     local img = Instance.new("ImageLabel", hdr)
     img.Size = UDim2.new(0, 70, 0, 70)
     img.Position = UDim2.new(0, 15, 0.5, -35)
@@ -132,7 +134,6 @@ local function MakeUI()
     is.Color = Color3.fromRGB(0, 255, 150)
     is.Thickness = 1.5
 
-    -- TÊN
     local title = Instance.new("TextLabel", hdr)
     title.Size = UDim2.new(1, -120, 0, 30)
     title.Position = UDim2.new(0, 95, 0, 25)
@@ -153,7 +154,6 @@ local function MakeUI()
     sub.TextSize = 11
     sub.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- NÚT X
     local closeBtn = Instance.new("TextButton", hdr)
     closeBtn.Size = UDim2.new(0, 28, 0, 28)
     closeBtn.Position = UDim2.new(1, -34, 0, 10)
@@ -163,6 +163,7 @@ local function MakeUI()
     closeBtn.Font = Enum.Font.GothamBold
     closeBtn.TextSize = 14
     closeBtn.AutoButtonColor = false
+    closeBtn.ZIndex = 6
     Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)
     closeBtn.MouseButton1Click:Connect(function() main.Visible = false end)
 
@@ -175,12 +176,14 @@ local function MakeUI()
     scroll.ScrollBarThickness = 4
     scroll.ScrollBarImageColor3 = Color3.fromRGB(0, 255, 150)
     scroll.CanvasSize = UDim2.new(0, 0, 0, 500)
+    scroll.ZIndex = 6
     Instance.new("UIListLayout", scroll).Padding = UDim.new(0, 8)
 
     local function Toggle(text, default, cb)
         local f = Instance.new("Frame", scroll)
         f.Size = UDim2.new(1, -20, 0, 40)
         f.BackgroundTransparency = 1
+        f.ZIndex = 6
         local l = Instance.new("TextLabel", f)
         l.Size = UDim2.new(0.7, 0, 1, 0)
         l.BackgroundTransparency = 1
@@ -189,18 +192,21 @@ local function MakeUI()
         l.Font = Enum.Font.GothamMedium
         l.TextSize = 14
         l.TextXAlignment = Enum.TextXAlignment.Left
+        l.ZIndex = 6
         local tb = Instance.new("TextButton", f)
         tb.Size = UDim2.new(0, 55, 0, 30)
         tb.Position = UDim2.new(1, -55, 0.5, -15)
         tb.BackgroundColor3 = default and Color3.fromRGB(0, 255, 150) or Color3.fromRGB(60, 60, 70)
         tb.Text = ""
         tb.AutoButtonColor = false
+        tb.ZIndex = 7
         Instance.new("UICorner", tb).CornerRadius = UDim.new(1, 0)
         local k = Instance.new("Frame", tb)
         k.Size = UDim2.new(0, 24, 0, 24)
         k.Position = default and UDim2.new(1, -27, 0.5, -12) or UDim2.new(0, 3, 0.5, -12)
         k.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
         k.BorderSizePixel = 0
+        k.ZIndex = 8
         Instance.new("UICorner", k).CornerRadius = UDim.new(1, 0)
         local s = default
         tb.MouseButton1Click:Connect(function()
@@ -215,6 +221,7 @@ local function MakeUI()
         local f = Instance.new("Frame", scroll)
         f.Size = UDim2.new(1, -20, 0, 55)
         f.BackgroundTransparency = 1
+        f.ZIndex = 6
         local l = Instance.new("TextLabel", f)
         l.Size = UDim2.new(0.7, 0, 0, 20)
         l.BackgroundTransparency = 1
@@ -223,6 +230,7 @@ local function MakeUI()
         l.Font = Enum.Font.GothamMedium
         l.TextSize = 14
         l.TextXAlignment = Enum.TextXAlignment.Left
+        l.ZIndex = 6
         local v = Instance.new("TextLabel", f)
         v.Size = UDim2.new(0.3, 0, 0, 20)
         v.Position = UDim2.new(0.7, 0, 0, 0)
@@ -232,16 +240,19 @@ local function MakeUI()
         v.Font = Enum.Font.GothamBold
         v.TextSize = 14
         v.TextXAlignment = Enum.TextXAlignment.Right
+        v.ZIndex = 6
         local bar = Instance.new("Frame", f)
         bar.Size = UDim2.new(1, 0, 0, 20)
         bar.Position = UDim2.new(0, 0, 0, 28)
         bar.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
         bar.BorderSizePixel = 0
+        bar.ZIndex = 7
         Instance.new("UICorner", bar).CornerRadius = UDim.new(1, 0)
         local fill = Instance.new("Frame", bar)
         fill.Size = UDim2.new((default - mn) / (mx - mn), 0, 1, 0)
         fill.BackgroundColor3 = Color3.fromRGB(0, 255, 150)
         fill.BorderSizePixel = 0
+        fill.ZIndex = 8
         Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
         local drag = false
         local function upd(x)
@@ -282,10 +293,12 @@ local function MakeUI()
     kl.Font = Enum.Font.GothamBold
     kl.TextSize = 13
     kl.TextXAlignment = Enum.TextXAlignment.Left
+    kl.ZIndex = 6
 
     local kf = Instance.new("Frame", scroll)
     kf.Size = UDim2.new(1, -20, 0, 40)
     kf.BackgroundTransparency = 1
+    kf.ZIndex = 6
     local kfl = Instance.new("UIListLayout", kf)
     kfl.FillDirection = Enum.FillDirection.Horizontal
     kfl.Padding = UDim.new(0, 5)
@@ -300,6 +313,7 @@ local function MakeUI()
         kb.Font = Enum.Font.GothamBold
         kb.TextSize = 14
         kb.AutoButtonColor = false
+        kb.ZIndex = 7
         Instance.new("UICorner", kb).CornerRadius = UDim.new(0, 6)
         kb.MouseButton1Click:Connect(function()
             C.Keys[key] = not C.Keys[key]
@@ -307,6 +321,7 @@ local function MakeUI()
         end)
     end
 
+    -- Bấm nút ☰ → ẩn/hiện menu (KHÔNG bị ảnh hưởng bởi menu)
     openBtn.MouseButton1Click:Connect(function()
         main.Visible = not main.Visible
     end)
@@ -314,6 +329,7 @@ end
 
 MakeUI()
 
+-- VÒNG LẶP FARM
 task.spawn(function()
     while task.wait(0.02) do
         if not C.Farm then Target = nil continue end
