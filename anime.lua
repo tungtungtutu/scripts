@@ -1,17 +1,18 @@
--- ANIME ARENA - MENU + ẢNH + TÊN
+-- ANIME ARENA - FULL MENU + AUTO FARM + SKILL
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 local LP = Players.LocalPlayer
 
 local C = {
     Farm = false, Skill = false, Range = 200,
-    AtkCD = 0.1, SkillCD = 0.5, TP = true,
-    Keys = {Z=true,X=true,C=true,V=true,F=true,G=true},
+    AtkCD = 0.03, SkillCD = 0.15, TP = true,
+    Keys = {Q=true, E=true, R=true},  -- ĐÚNG PHÍM GAME NÀY
     MemeURL = "rbxassetid://13329309365"
 }
 
 local Target, LastAtk, LastSkill = nil, 0, 0
 
+-- CLICK (nhiều fallback)
 local function DoClick()
     pcall(function() if mouse1click then mouse1click() end end)
     pcall(function()
@@ -27,18 +28,26 @@ local function DoClick()
     end)
 end
 
+-- BẤM PHÍM (3 fallback)
 local function DoKey(key)
     pcall(function()
-        if keypress then keypress(key) task.wait(0.03) keyrelease(key) end
+        if keypress then keypress(key) task.wait(0.05) keyrelease(key) end
     end)
     pcall(function()
         local VIM = game:GetService("VirtualInputManager")
         VIM:SendKeyEvent(true, Enum.KeyCode[key], false, game)
-        task.wait(0.03)
+        task.wait(0.05)
         VIM:SendKeyEvent(false, Enum.KeyCode[key], false, game)
+    end)
+    pcall(function()
+        local VU = game:GetService("VirtualUser")
+        VU:Button1Down(Vector2.new(0, 0))
+        task.wait(0.02)
+        VU:Button1Up(Vector2.new(0, 0))
     end)
 end
 
+-- TÌM ĐỊCH
 local function GetEnemy()
     local myChar = LP.Character
     if not myChar then return nil end
@@ -59,6 +68,7 @@ local function GetEnemy()
     return best
 end
 
+-- MENU
 local function MakeUI()
     local pg = LP:FindFirstChildOfClass("PlayerGui") or LP:WaitForChild("PlayerGui", 5)
     if not pg then return end
@@ -71,6 +81,7 @@ local function MakeUI()
     gui.DisplayOrder = 999999
     gui.Parent = pg
 
+    -- Nút mở menu
     local openBtn = Instance.new("TextButton", gui)
     openBtn.Size = UDim2.new(0, 55, 0, 55)
     openBtn.Position = UDim2.new(0, 15, 0, 100)
@@ -87,6 +98,7 @@ local function MakeUI()
     obs.Color = Color3.fromRGB(0, 255, 150)
     obs.Thickness = 2
 
+    -- Menu chính
     local main = Instance.new("Frame", gui)
     main.Name = "Main"
     main.Size = UDim2.new(0, 320, 0, 460)
@@ -102,6 +114,7 @@ local function MakeUI()
     ms.Thickness = 1.5
     ms.Transparency = 0.3
 
+    -- Header + ảnh
     local hdr = Instance.new("Frame", main)
     hdr.Size = UDim2.new(1, 0, 0, 100)
     hdr.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
@@ -113,6 +126,7 @@ local function MakeUI()
     hf.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
     hf.BorderSizePixel = 0
 
+    -- ẢNH
     local img = Instance.new("ImageLabel", hdr)
     img.Size = UDim2.new(0, 70, 0, 70)
     img.Position = UDim2.new(0, 15, 0.5, -35)
@@ -125,6 +139,7 @@ local function MakeUI()
     is.Color = Color3.fromRGB(0, 255, 150)
     is.Thickness = 1.5
 
+    -- Tên
     local title = Instance.new("TextLabel", hdr)
     title.Size = UDim2.new(1, -120, 0, 30)
     title.Position = UDim2.new(0, 95, 0, 25)
@@ -145,6 +160,7 @@ local function MakeUI()
     sub.TextSize = 11
     sub.TextXAlignment = Enum.TextXAlignment.Left
 
+    -- Nút X
     local closeBtn = Instance.new("TextButton", hdr)
     closeBtn.Size = UDim2.new(0, 28, 0, 28)
     closeBtn.Position = UDim2.new(1, -34, 0, 10)
@@ -157,6 +173,7 @@ local function MakeUI()
     Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)
     closeBtn.MouseButton1Click:Connect(function() main.Visible = false end)
 
+    -- Scroll
     local scroll = Instance.new("ScrollingFrame", main)
     scroll.Size = UDim2.new(1, -20, 1, -115)
     scroll.Position = UDim2.new(0, 10, 0, 108)
@@ -167,6 +184,7 @@ local function MakeUI()
     scroll.CanvasSize = UDim2.new(0, 0, 0, 500)
     Instance.new("UIListLayout", scroll).Padding = UDim.new(0, 8)
 
+    -- Toggle
     local function Toggle(text, default, cb)
         local f = Instance.new("Frame", scroll)
         f.Size = UDim2.new(1, -20, 0, 40)
@@ -201,6 +219,7 @@ local function MakeUI()
         end)
     end
 
+    -- Slider
     local function Slider(text, mn, mx, default, cb)
         local f = Instance.new("Frame", scroll)
         f.Size = UDim2.new(1, -20, 0, 55)
@@ -256,17 +275,19 @@ local function MakeUI()
         end)
     end
 
+    -- Nội dung
     Toggle("Bật Auto Farm", C.Farm, function(s) C.Farm = s; Target = nil end)
     Toggle("Teleport tới địch", C.TP, function(s) C.TP = s end)
     Slider("Phạm vi", 50, 500, C.Range, function(v) C.Range = v end)
     Slider("Delay đánh (x10ms)", 1, 30, C.AtkCD * 100, function(v) C.AtkCD = v / 100 end)
+
     Toggle("Tự dùng chiêu", C.Skill, function(s) C.Skill = s end)
     Slider("Delay chiêu (x10ms)", 1, 50, C.SkillCD * 100, function(v) C.SkillCD = v / 100 end)
 
     local kl = Instance.new("TextLabel", scroll)
     kl.Size = UDim2.new(1, -20, 0, 22)
     kl.BackgroundTransparency = 1
-    kl.Text = "Chọn phím chiêu:"
+    kl.Text = "Chọn phím chiêu (Q E R):"
     kl.TextColor3 = Color3.fromRGB(180, 100, 255)
     kl.Font = Enum.Font.GothamBold
     kl.TextSize = 13
@@ -280,9 +301,9 @@ local function MakeUI()
     kfl.Padding = UDim.new(0, 5)
     kfl.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
-    for _, key in ipairs({"Z","X","C","V","F","G"}) do
+    for _, key in ipairs({"Q","E","R"}) do
         local kb = Instance.new("TextButton", kf)
-        kb.Size = UDim2.new(0, 44, 0, 36)
+        kb.Size = UDim2.new(0, 60, 0, 36)
         kb.BackgroundColor3 = C.Keys[key] and Color3.fromRGB(180, 100, 255) or Color3.fromRGB(35, 35, 45)
         kb.Text = key
         kb.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -303,8 +324,9 @@ end
 
 MakeUI()
 
+-- VÒNG LẶP FARM
 task.spawn(function()
-    while task.wait(0.1) do
+    while task.wait(0.02) do
         if not C.Farm then Target = nil continue end
         if Target then
             local hum = Target.player.Character and Target.player.Character:FindFirstChildOfClass("Humanoid")
@@ -323,7 +345,7 @@ task.spawn(function()
                 end
                 if C.Skill and tick() - LastSkill > C.SkillCD then
                     LastSkill = tick()
-                    for _, k in ipairs({"Z","X","C","V","F","G"}) do
+                    for _, k in ipairs({"Q","E","R"}) do
                         if C.Keys[k] then DoKey(k) end
                     end
                 end
