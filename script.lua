@@ -1,4 +1,4 @@
--- AUTO RETALIATE FPS - FIXED AIM
+-- AUTO RETALIATE FPS - FAST AIM
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 local WS = game:GetService("Workspace")
@@ -10,7 +10,6 @@ local C = {
     Enabled = false,
     Range = 300,
     Duration = 5,
-    AimSmooth = 0.3,
     AutoShoot = true,
     AutoReload = true,
     TPToAttacker = false
@@ -21,7 +20,6 @@ local Attacker = nil
 local RetaliateUntil = 0
 local LastReload = 0
 
--- Tự cập nhật camera
 WS:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
     Cam = WS.CurrentCamera
 end)
@@ -94,7 +92,6 @@ local function TPTo(hrp)
     myHRP.CFrame = CFrame.new(hrp.Position - hrp.CFrame.LookVector * 8, hrp.Position)
 end
 
--- UI
 local function MakeUI()
     local pg = LP:FindFirstChildOfClass("PlayerGui") or LP:WaitForChild("PlayerGui", 5)
     if not pg then return end
@@ -127,32 +124,13 @@ local function MakeUI()
         btn.Text = "RETAL\n" .. (C.Enabled and "ON" or "OFF")
         btn.BackgroundColor3 = C.Enabled and Color3.fromRGB(200, 50, 50) or Color3.fromRGB(60, 60, 70)
     end)
-    
-    local shootBtn = Instance.new("TextButton", gui)
-    shootBtn.Size = UDim2.new(0, 80, 0, 80)
-    shootBtn.Position = UDim2.new(0, 15, 0.4, 90)
-    shootBtn.BackgroundColor3 = C.AutoShoot and Color3.fromRGB(200, 100, 50) or Color3.fromRGB(60, 60, 70)
-    shootBtn.Text = "SHOOT\n" .. (C.AutoShoot and "ON" or "OFF")
-    shootBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    shootBtn.Font = Enum.Font.GothamBold
-    shootBtn.TextSize = 13
-    shootBtn.AutoButtonColor = false
-    shootBtn.Active = true
-    shootBtn.Draggable = true
-    Instance.new("UICorner", shootBtn).CornerRadius = UDim.new(1, 0)
-    
-    shootBtn.MouseButton1Click:Connect(function()
-        C.AutoShoot = not C.AutoShoot
-        shootBtn.Text = "SHOOT\n" .. (C.AutoShoot and "ON" or "OFF")
-        shootBtn.BackgroundColor3 = C.AutoShoot and Color3.fromRGB(200, 100, 50) or Color3.fromRGB(60, 60, 70)
-    end)
 end
 
 MakeUI()
 
 -- Theo dõi máu
 task.spawn(function()
-    while task.wait(0.05) do
+    while task.wait(0.03) do
         local hum = GetMyHum()
         if hum then
             if LastHP > 0 and hum.Health < LastHP and C.Enabled then
@@ -160,7 +138,6 @@ task.spawn(function()
                 if attacker then
                     Attacker = attacker
                     RetaliateUntil = tick() + C.Duration
-                    print("[Retaliate] Bị bắn! Trả đũa:", attacker.player.Name)
                 end
             end
             LastHP = hum.Health
@@ -168,15 +145,13 @@ task.spawn(function()
     end
 end)
 
--- Vòng lặp trả đũa với aim qua RenderStepped
+-- Vòng lặp trả đũa - AIM TỨC THÌ
 task.spawn(function()
     local isShooting = false
-    local aimBind = nil
     
-    while task.wait(0.01) do
+    while task.wait(0.005) do  -- Nhanh hơn (0.005s)
         if tick() > RetaliateUntil then
             if isShooting then StopShoot(); isShooting = false end
-            if aimBind then aimBind:Disconnect(); aimBind = nil end
             Attacker = nil
             continue
         end
@@ -186,12 +161,9 @@ task.spawn(function()
         end
         
         if Attacker and Attacker.hum and Attacker.hum.Health > 0 then
-            if aimBind then aimBind:Disconnect() end
-            local targetHead = Attacker.head
-            aimBind = RS.RenderStepped:Connect(function()
-                pcall(function()
-                    Cam.CFrame = CFrame.new(Cam.CFrame.Position, targetHead.Position)
-                end)
+            -- AIM TỨC THÌ
+            pcall(function()
+                Cam.CFrame = CFrame.new(Cam.CFrame.Position, Attacker.head.Position)
             end)
             
             if C.TPToAttacker then TPTo(Attacker.hrp) end
@@ -204,11 +176,10 @@ task.spawn(function()
             if C.AutoReload and tick() - LastReload > 3 then
                 StopShoot(); isShooting = false
                 DoReload()
-                task.wait(0.5)
+                task.wait(0.3)
             end
         else
             if isShooting then StopShoot(); isShooting = false end
-            if aimBind then aimBind:Disconnect(); aimBind = nil end
             Attacker = nil
         end
     end
@@ -222,4 +193,4 @@ LP.CharacterAdded:Connect(function()
     MakeUI()
 end)
 
-print("🔫 Auto Retaliate FPS loaded - fixed aim")
+print("🔫 Auto Retaliate FPS - FAST AIM loaded")
